@@ -9,9 +9,20 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
+    "@mui/icons-material": "^5.8.4",
+    "@mui/material": "^5.8.6",
+    "@polkadot/keyring": "^9.7.2",
+    "@polkadot/util": "^9.7.2",
     "@tauri-apps/api": "^1.0.1",
+    "@tiptap/extension-character-count": "^2.0.0-beta.31",
+    "@tiptap/react": "^2.0.0-beta.114",
+    "@tiptap/starter-kit": "^2.0.0-beta.190",
+    "ansi-to-html": "^0.7.2",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "tauri-plugin-log-api": "github:ESPINS/tauri-plugin-log#2c3ff4b"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.0.0",
