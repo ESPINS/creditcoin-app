@@ -39,7 +39,10 @@ struct Payload {
 
 impl log::Log for TauriLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= Level::Info && metadata.target() != "frame-executive"
+        if metadata.level() <= Level::Info && metadata.target().ne("frame_executive") {
+            return true;
+        }
+        return false;
     }
 
     fn log(&self, record: &Record) {
@@ -117,7 +120,7 @@ fn validate_path(path: String) -> bool {
 fn main() {
     let cli = creditcoin_node::command::from_args();
 
-    if cli.logger_mode == "WithoutLoggerInit" {
+    if cli.logger_mode.eq("WithoutLoggerInit") {
         match LocalSocketStream::connect(LOCAL_SOCKET_NAME) {
             Ok(conn) => {
                 LOCAL_SOCKET_CLIENT.lock().unwrap().replace(conn);
