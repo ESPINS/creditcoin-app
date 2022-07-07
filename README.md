@@ -78,3 +78,5 @@ Substrate!
    ```
    npm run tauri build
    ```
+
+![image](https://user-images.githubusercontent.com/19469291/177813410-9007f339-fa49-4dd8-9320-6bb58f39f68b.png)
