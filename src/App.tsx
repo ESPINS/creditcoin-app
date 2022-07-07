@@ -13,7 +13,7 @@ function Copyright() {
     return (
         <Typography variant="body2" color="text.secondary" align="center">
             {'Powered by '}
-            <Link color="inherit" target="_blank" href="https://github.com/ESPINS?tab=repositories">
+            <Link color="inherit" target="_blank" href="https://github.com/ESPINS/creditcoin-app">
                 Jimin Lee
             </Link>{' '}
             {new Date().getFullYear()}
