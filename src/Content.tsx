@@ -72,6 +72,55 @@ function Content() {
         message: string;
     }
 
+    useEffect(() => {
+        setTauriLoggerInitState((initState) => {
+            if (initState) {
+                let minerState = sessionStorage.getItem("minerState");
+
+                if (minerState != null && minerState == 'start') {
+                    setMineState(true);
+                }
+
+                listen('tauri-logger', event => {
+                    let payload = event.payload as Payload;
+                    if (payload.message.length > 0 && editor != null) {
+                        setFollowState((follow) => {
+                            let chainedCommands = editor.chain();
+        
+                            // Set the cursor to the last position
+                            chainedCommands.focus('end', { scrollIntoView: follow });
+        
+                            // Write...
+                            chainedCommands.insertContent(ansiConverter.toHtml(payload.message));
+        
+                            if (follow == false) {
+                                if (editor.view.state.selection != null) {
+                                    let selection = editor.view.state.selection;
+                                    // restore selection
+                                    chainedCommands.setTextSelection({ from: selection.from, to: selection.to });
+                                }
+                            }
+        
+                            chainedCommands.run();
+        
+                            let textLength = editor.storage.characterCount.characters();
+                            let nodeCount = editor.storage.characterCount.characters({ mode: 'nodeSize' });
+        
+                            if (textLength >= 10_000_000) {
+                                let removeNodeCount = parseInt((nodeCount / 2).toFixed());
+                                editor.commands.deleteRange({ from: 0, to: removeNodeCount });
+                            }
+        
+                            return follow;
+                        });
+                    }
+                });
+            }
+
+            return true;
+        });
+    }, [editor]);
+
     const startButtonClick = () => {
         setMineDialogOpenState(true);
         let startupConfigJson = localStorage.getItem(startupConfigKey);
@@ -95,6 +144,7 @@ function Content() {
     const stopButtonClick = () => {
         setMineState(false);
         invoke('stop_creditcoin');
+        sessionStorage.setItem("minerState", 'stop');
     }
 
     const validateAddress = (address: string) => {
@@ -147,6 +197,7 @@ function Content() {
             setAlertOpenState(true);
             return;
         }
+
         if (validateAddress(address) == false) {
             setAlertMessage({
                 title: 'Validate Address',
@@ -158,6 +209,7 @@ function Content() {
             setAlertOpenState(true);
             return;
         }
+
         if (validatePort(port) == false) {
             setAlertMessage({
                 title: 'Validate Port',
@@ -169,6 +221,7 @@ function Content() {
             setAlertOpenState(true);
             return;
         }
+
         if (await validateDataPath(dataPath) == false) {
             setAlertMessage({
                 title: 'Validate data path',
@@ -180,6 +233,7 @@ function Content() {
             setAlertOpenState(true);
             return;
         }
+
         if (validateAccountAddress(miningAddress) == false) {
             setAlertMessage({
                 title: 'Validate Account Key',
@@ -192,6 +246,7 @@ function Content() {
             return;
         }
         setMineDialogOpenState(false);
+
         localStorage.setItem(startupConfigKey, JSON.stringify({
             telemetryNodeName: telemetryNodeName,
             address: address,
@@ -199,50 +254,17 @@ function Content() {
             dataPath: dataPath,
             miningAddress: miningAddress
         }));
+
         setFollowState(true);
+
         editor?.setEditable(true);
         setTimeout(function () {
             editor?.view.focus();
             editor?.setEditable(false);
         }, 0);
+
         setMineState(true);
-        if (tauriLoggerInitState == false) {
-            setTauriLoggerInitState(true);
-            listen('tauri-logger', event => {
-                let payload = event.payload as Payload;
-                if (payload.message.length > 0 && editor != null) {
-                    setFollowState((follow) => {
-                        let chainedCommands = editor.chain();
 
-                        // Set the cursor to the last position
-                        chainedCommands.focus('end', { scrollIntoView: follow });
-
-                        // Write...
-                        chainedCommands.insertContent(ansiConverter.toHtml(payload.message));
-
-                        if (follow == false) {
-                            if (editor.view.state.selection != null) {
-                                let selection = editor.view.state.selection;
-                                // restore selection
-                                chainedCommands.setTextSelection({ from: selection.from, to: selection.to });
-                            }
-                        }
-
-                        chainedCommands.run();
-
-                        let textLength = editor.storage.characterCount.characters();
-                        let nodeCount = editor.storage.characterCount.characters({ mode: 'nodeSize' });
-
-                        if (textLength >= 10_000_000) {
-                            let removeNodeCount = parseInt((nodeCount / 2).toFixed());
-                            editor.commands.deleteRange({ from: 0, to: removeNodeCount });
-                        }
-
-                        return follow;
-                    });
-                }
-            });
-        }
         let creditcoinArgs: string[] = [
             "--validator",
             "--name",
@@ -264,7 +286,10 @@ function Content() {
             "--port",
             port
         ];
+
         invoke('start_creditcoin', { args: creditcoinArgs });
+
+        sessionStorage.setItem("minerState", 'start');
     }
 
     const handleIpAddressLookup = () => {
